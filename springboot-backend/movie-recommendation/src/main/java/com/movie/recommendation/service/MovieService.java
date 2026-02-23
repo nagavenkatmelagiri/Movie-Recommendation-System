@@ -27,7 +27,9 @@ public class MovieService {
     public List<Movie> getAllMovies() {
         return movieRepository.findAll();
     }
-
+    public List<Movie> getMoviesByGenre(String genre) {
+        return movieRepository.findByGenre(genre);
+    }
     public List<Movie> recommendMoviesForUser(Long userId) {
         List<Rating> userRatings = ratingRepository.findAll()
                 .stream()

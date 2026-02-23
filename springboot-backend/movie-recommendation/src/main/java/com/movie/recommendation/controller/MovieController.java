@@ -39,4 +39,8 @@ public class MovieController {
     public List<Movie> recommendMovies(@PathVariable Long userId) {
         return movieService.recommendMoviesForUser(userId);
     }
+    @GetMapping("/search")
+    public List<Movie> searchByGenre(@RequestParam String genre) {
+        return movieService.getMoviesByGenre(genre);
+    }
 }

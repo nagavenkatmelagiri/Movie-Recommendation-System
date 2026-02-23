@@ -17,15 +17,41 @@ public class RatingService {
         this.ratingRepository = ratingRepository;
     }
 
+    // Save rating
     public Rating saveRating(Rating rating) {
         return ratingRepository.save(rating);
     }
 
+    // Get all ratings
+    public List<Rating> getAllRatings() {
+        return ratingRepository.findAll();
+    }
+
+    // Get ratings by movie
+    public List<Rating> getRatingsByMovie(Movie movie) {
+        return ratingRepository.findByMovie(movie);
+    }
+
+    // Get ratings by user
     public List<Rating> getRatingsByUser(User user) {
         return ratingRepository.findByUser(user);
     }
 
-    public List<Rating> getRatingsByMovie(Movie movie) {
-        return ratingRepository.findByMovie(movie);
+    // ⭐ Calculate average rating for a movie
+    public double getAverageRatingForMovie(Long movieId) {
+
+        List<Rating> ratings = ratingRepository.findAll()
+                .stream()
+                .filter(r -> r.getMovie().getMovieId().equals(movieId))
+                .toList();
+
+        if (ratings.isEmpty()) {
+            return 0.0;
+        }
+
+        return ratings.stream()
+                .mapToInt(Rating::getScore)
+                .average()
+                .orElse(0.0);
     }
 }

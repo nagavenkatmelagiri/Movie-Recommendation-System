@@ -4,6 +4,8 @@ import com.movie.recommendation.entity.Rating;
 import com.movie.recommendation.service.RatingService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/ratings")
 public class RatingController {
@@ -14,9 +16,15 @@ public class RatingController {
         this.ratingService = ratingService;
     }
 
-    // POST: add rating
+    // Add rating
     @PostMapping
-    public Rating createRating(@RequestBody Rating rating) {
+    public Rating addRating(@RequestBody Rating rating) {
         return ratingService.saveRating(rating);
+    }
+
+    // Get all ratings
+    @GetMapping
+    public List<Rating> getAllRatings() {
+        return ratingService.getAllRatings();
     }
 }

@@ -10,15 +10,15 @@ public class Rating {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ratingId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    private int score;
 
     @ManyToOne
     @JoinColumn(name = "movie_id")
     private Movie movie;
 
-    private Integer rating;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public Rating() {}
 
@@ -30,12 +30,12 @@ public class Rating {
         this.ratingId = ratingId;
     }
 
-    public User getUser() {
-        return user;
+    public int getScore() {
+        return score;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setScore(int score) {
+        this.score = score;
     }
 
     public Movie getMovie() {
@@ -46,11 +46,11 @@ public class Rating {
         this.movie = movie;
     }
 
-    public Integer getRating() {
-        return rating;
+    public User getUser() {
+        return user;
     }
 
-    public void setRating(Integer rating) {
-        this.rating = rating;
+    public void setUser(User user) {
+        this.user = user;
     }
 }

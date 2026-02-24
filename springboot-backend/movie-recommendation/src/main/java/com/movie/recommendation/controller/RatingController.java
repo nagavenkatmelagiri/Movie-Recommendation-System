@@ -25,6 +25,7 @@ public class RatingController {
     // Get all ratings
     @GetMapping
     public List<Rating> getAllRatings() {
+
         return ratingService.getAllRatings();
     }
 }

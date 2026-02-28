@@ -1,17 +1,18 @@
 package com.movie.recommendation.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.movie.recommendation.dto.AuthResponse;
 import com.movie.recommendation.dto.LoginRequest;
 import com.movie.recommendation.dto.RegisterRequest;
 import com.movie.recommendation.entity.User;
 import com.movie.recommendation.repository.UserRepository;
 import com.movie.recommendation.security.JwtUtil;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")

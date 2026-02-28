@@ -1,9 +1,14 @@
 package com.movie.recommendation.repository;
 
-import com.movie.recommendation.entity.Movie;
-import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.movie.recommendation.entity.Movie;
 
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     List<Movie> findByGenre(String genre);
+
+    Optional<Movie> findFirstByTitle(String title);
 }

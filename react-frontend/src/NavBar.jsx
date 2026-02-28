@@ -1,12 +1,13 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-function NavBar() {
+function NavBar({ token }) {
+	if (!token) {
+		return null;
+	}
+
   return (
     <nav className="main-nav">
-      <NavLink to="/auth" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-        Auth
-      </NavLink>
       <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
         Dashboard
       </NavLink>

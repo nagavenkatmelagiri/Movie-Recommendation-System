@@ -6,6 +6,8 @@ import com.movie.recommendation.dto.RegisterRequest;
 import com.movie.recommendation.entity.User;
 import com.movie.recommendation.repository.UserRepository;
 import com.movie.recommendation.security.JwtUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,11 +41,11 @@ public class AuthController {
         User user = userRepository.findByEmail(request.getEmail());
 
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or mobile number.");
         }
 
         if (!user.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Invalid password");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Incorrect password.");
         }
 
         String token = jwtUtil.generateToken(user.getEmail());

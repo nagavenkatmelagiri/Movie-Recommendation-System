@@ -28,6 +28,17 @@ code {
   margin-bottom: 24px;
 }
 
+.app-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-logout-btn {
+  flex-shrink: 0;
+}
+
 .app-header h1 {
   margin: 0;
   font-size: 2.3rem;
@@ -193,6 +204,11 @@ code {
 }
 
 @media (max-width: 600px) {
+  .app-header-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .app-header h1 {
     font-size: 1.9rem;
   }
@@ -202,4 +218,496 @@ code {
   .page-panel h2 {
     font-size: 1.3rem;
   }
+}
+.loader {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 20px;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+.movie-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.movie-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.auth-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(180, 0, 20, 0.3), transparent 45%),
+    linear-gradient(180deg, #2a050a 0%, #130204 45%, #080102 100%);
+}
+
+.auth-shell .app-wrapper {
+  max-width: 100%;
+  margin: 0;
+}
+
+.auth-screen {
+  min-height: 100vh;
+  color: #ffffff;
+}
+
+.auth-screen-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 14px 0;
+}
+
+.auth-brand {
+  margin: 0;
+  margin-left: clamp(20px, 8vw, 140px);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  letter-spacing: 0.06em;
+  font-weight: 800;
+  color: #e50914;
+}
+
+.auth-content {
+  width: min(480px, calc(100% - 40px));
+  margin-left: clamp(20px, 8vw, 140px);
+  margin-top: clamp(44px, 12vh, 95px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-title {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.auth-subtitle {
+  margin: 0 0 10px;
+  color: #d1d5db;
+  font-size: 1rem;
+}
+
+.auth-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 64px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  background: rgba(10, 5, 8, 0.72);
+  color: #ffffff;
+  font-size: 1.05rem;
+  padding: 0 16px;
+  outline: none;
+}
+
+.auth-input::placeholder {
+  color: rgba(229, 231, 235, 0.75);
+}
+
+.auth-input:focus {
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
+}
+
+.auth-cta-btn {
+  border: none;
+  border-radius: 6px;
+  background: #e50914;
+  color: #ffffff;
+  padding: 14px 18px;
+  margin-top: 2px;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-cta-btn:hover {
+  background: #f6121d;
+}
+
+.auth-switch-link {
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  text-decoration: underline;
+  width: fit-content;
+  padding: 6px 0 0;
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+
+.auth-login-message {
+  color: #d1d5db;
+  font-size: 1rem;
+  margin-top: 6px;
+}
+
+@media (max-width: 700px) {
+  .auth-content {
+    margin-left: 20px;
+    margin-right: 20px;
+    width: auto;
+  }
+
+  .auth-brand {
+    margin-left: 20px;
+  }
+
+  .auth-input {
+    height: 58px;
+  }
+}
+
+.dashboard-shell {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(229, 9, 20, 0.24), transparent 45%),
+    linear-gradient(180deg, #111111 0%, #0a0a0a 100%);
+  color: #ffffff;
+}
+
+.dashboard-shell .app-header h1 {
+  color: #ffffff;
+}
+
+.dashboard-shell .app-header p {
+  color: #b3b3b3;
+}
+
+.dashboard-shell .main-nav {
+  margin: 18px 0 26px;
+}
+
+.dashboard-shell .nav-link {
+  background: rgba(32, 32, 32, 0.9);
+  border-color: #333333;
+  color: #ffffff;
+}
+
+.dashboard-shell .nav-link.active {
+  background: #e50914;
+  border-color: #e50914;
+}
+
+.dashboard-shell .danger-btn {
+  background: #e50914;
+}
+
+.dashboard-shell .header-logout-btn {
+  position: fixed;
+  top: 18px;
+  right: 22px;
+  z-index: 1000;
+}
+
+.movies-shell .header-logout-btn {
+  position: fixed;
+  top: 18px;
+  right: 22px;
+  z-index: 1000;
+}
+
+.dashboard-shell .danger-btn:hover {
+  background: #f6121d;
+}
+
+.netflix-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-hero {
+  min-height: 230px;
+  border-radius: 18px;
+  padding: 28px;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.55) 40%, rgba(0, 0, 0, 0.28) 100%),
+    radial-gradient(circle at 70% 20%, rgba(229, 9, 20, 0.55), rgba(0, 0, 0, 0) 45%),
+    linear-gradient(120deg, #1f1f1f, #101010);
+  border: 1px solid #2c2c2c;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+}
+
+.hero-tag {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #e50914;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.dashboard-hero h2 {
+  margin: 8px 0 8px;
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  line-height: 1.1;
+}
+
+.hero-copy {
+  margin: 0;
+  color: #d4d4d4;
+  max-width: 560px;
+  font-size: 1.02rem;
+}
+
+.hero-controls {
+  margin-top: 22px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dashboard-user-input {
+  box-sizing: border-box;
+  width: min(360px, 100%);
+  border-radius: 8px;
+  border: 1px solid #4a4a4a;
+  background: rgba(20, 20, 20, 0.92);
+  color: #ffffff;
+  font-size: 1rem;
+  padding: 12px 14px;
+  outline: none;
+}
+
+.dashboard-user-input:focus {
+  border-color: #e50914;
+  box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.25);
+}
+
+.dashboard-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid #3e3e3e;
+  background: rgba(25, 25, 25, 0.9);
+  padding: 8px 12px;
+  color: #dddddd;
+  font-size: 0.88rem;
+}
+
+.netflix-row h3 {
+  margin: 0 0 12px;
+  font-size: 1.7rem;
+  color: #ffffff;
+}
+
+.netflix-recommend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.netflix-movie-card {
+  min-height: 240px;
+  border-radius: 12px;
+  border: 1px solid #2d2d2d;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  background:
+    linear-gradient(180deg, rgba(15, 15, 15, 0.1) 20%, rgba(0, 0, 0, 0.88) 100%),
+    linear-gradient(135deg, #a00014 0%, #5e0008 42%, #181818 100%);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.netflix-movie-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+}
+
+.netflix-card-overlay {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.78) 55%, rgba(0, 0, 0, 0.92) 100%);
+}
+
+.netflix-card-overlay h4 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #ffffff;
+}
+
+.netflix-card-overlay p {
+  margin: 10px 0 0;
+  color: #d1d5db;
+}
+
+.movie-meta {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.dashboard-shell .empty-msg,
+.dashboard-shell .loader {
+  color: #d1d5db;
+}
+
+.movies-shell {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(229, 9, 20, 0.22), transparent 48%),
+    linear-gradient(180deg, #101010 0%, #070707 100%);
+  color: #ffffff;
+}
+
+.movies-shell .main-nav {
+  margin: 18px 0 26px;
+}
+
+.movies-shell .nav-link {
+  background: rgba(32, 32, 32, 0.9);
+  border-color: #333333;
+  color: #ffffff;
+}
+
+.movies-shell .nav-link.active {
+  background: #e50914;
+  border-color: #e50914;
+}
+
+.movies-shell .danger-btn {
+  background: #e50914;
+}
+
+.movies-shell .danger-btn:hover {
+  background: #f6121d;
+}
+
+.movies-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.movies-toolbar {
+  max-width: 620px;
+}
+
+.movies-search-input {
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #3e3e3e;
+  background: rgba(14, 14, 14, 0.95);
+  color: #ffffff;
+  font-size: 1rem;
+  padding: 14px 16px;
+  outline: none;
+}
+
+.movies-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.movies-search-input:focus {
+  border-color: #e50914;
+  box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.22);
+}
+
+.movies-grid-wrap .empty-msg {
+  color: #d1d5db;
+}
+
+.rating-toast {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 1200;
+  border-radius: 12px;
+  border: 1px solid #2d2d2d;
+  background: rgba(15, 15, 15, 0.96);
+  color: #ffffff;
+  padding: 12px 16px;
+  font-weight: 600;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.38);
+  animation: rating-toast-pop 0.24s ease-out;
+}
+
+.rating-toast--success {
+  border-color: #e50914;
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.98), rgba(15, 23, 42, 0.94));
+}
+
+.rating-toast--error {
+  border-color: #f6121d;
+  background: linear-gradient(135deg, rgba(88, 10, 15, 0.98), rgba(15, 23, 42, 0.94));
+}
+
+@keyframes rating-toast-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.netflix-movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.netflix-browse-card {
+  min-height: 300px;
+  border-radius: 12px;
+  border: 1px solid #2a2a2a;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  background:
+    linear-gradient(180deg, rgba(10, 10, 10, 0.12) 18%, rgba(0, 0, 0, 0.9) 100%),
+    linear-gradient(130deg, #8f0011 0%, #450007 44%, #151515 100%);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.netflix-browse-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.58);
+}
+
+.browse-card-overlay {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.82) 54%, rgba(0, 0, 0, 0.94) 100%);
+}
+
+.browse-card-overlay h3 {
+  margin: 0;
+  font-size: 1.28rem;
+  color: #ffffff;
+}
+
+.browse-card-overlay p {
+  margin: 8px 0 0;
+  color: #e5e7eb;
+}
+
+.movies-rate-input {
+  border-color: #4a4a4a;
+  background: rgba(15, 15, 15, 0.92);
+  color: #ffffff;
+}
+
+.movies-rate-input:focus {
+  border-color: #e50914;
+  box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.22);
+}
+
+.movies-rate-btn {
+  background: #e50914;
+}
+
+.movies-rate-btn:hover {
+  background: #f6121d;
 }

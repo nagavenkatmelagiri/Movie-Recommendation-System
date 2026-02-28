@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthView from "./AuthView.jsx";
 import DashboardView from "./DashboardView.jsx";
@@ -15,11 +15,12 @@ function ProtectedRoute({ token, children }) {
 	return children;
 }
 
-function App() {
+function AppContent() {
 	const [movies, setMovies] = useState([]);
 	const [recommendedMovies, setRecommendedMovies] = useState([]);
+	const [loadingML, setLoadingML] = useState(false);
 	const [averageRatings, setAverageRatings] = useState({});
-	const [userId, setUserId] = useState("");
+	const [userId, setUserId] = useState(localStorage.getItem("userId") || "");
 	const [ratingInputs, setRatingInputs] = useState({});
 	const [authMode, setAuthMode] = useState("login");
 	const [name, setName] = useState("");
@@ -27,17 +28,138 @@ function App() {
 	const [password, setPassword] = useState("");
 	const [token, setToken] = useState(localStorage.getItem("token") || "");
 	const [authMessage, setAuthMessage] = useState("");
+	const [notification, setNotification] = useState(null);
+	const hasAttemptedUserIdAutofill = useRef(false);
+	const notificationTimerRef = useRef(null);
+	const recommendationRequestIdRef = useRef(0);
 	const apiBaseUrl = "http://localhost:8080";
+	const location = useLocation();
+	const navigate = useNavigate();
+	const isAuthPage = location.pathname === "/auth";
+	const isDashboardPage = location.pathname === "/dashboard";
+	const isMoviesPage = location.pathname === "/movies";
 
 	useEffect(() => {
 		axios
 			.get(`${apiBaseUrl}/movies`)
 			.then((data) => {
 				setMovies(data.data);
-				setRecommendedMovies(data.data.slice(0, 4));
 				fetchAverageRatings(data.data);
 			});
 	}, []);
+
+	const decodeEmailFromToken = (jwtToken) => {
+		try {
+			if (!jwtToken || !jwtToken.includes(".")) {
+				return "";
+			}
+
+			const payload = JSON.parse(atob(jwtToken.split(".")[1]));
+			return String(payload?.sub || "");
+		} catch {
+			return "";
+		}
+	};
+
+	const resolveUserIdByEmail = async (emailValue) => {
+		const normalizedEmail = String(emailValue || "").trim();
+
+		if (!normalizedEmail) {
+			return "";
+		}
+
+		try {
+			const response = await axios.get(`${apiBaseUrl}/users/email/${encodeURIComponent(normalizedEmail)}`);
+			const resolvedUserId = String(response?.data?.userId || "");
+
+			if (resolvedUserId) {
+				setUserId(resolvedUserId);
+				localStorage.setItem("userId", resolvedUserId);
+			}
+
+			return resolvedUserId;
+		} catch (error) {
+			console.error("Unable to resolve user ID from email:", error);
+			return "";
+		}
+	};
+
+	useEffect(() => {
+		if (!token || hasAttemptedUserIdAutofill.current) {
+			return;
+		}
+
+		hasAttemptedUserIdAutofill.current = true;
+
+		if (String(localStorage.getItem("userId") || "").trim()) {
+			return;
+		}
+
+		const emailFromToken = decodeEmailFromToken(token);
+		if (emailFromToken) {
+			resolveUserIdByEmail(emailFromToken);
+		}
+	}, [token]);
+
+	useEffect(() => {
+		return () => {
+			if (notificationTimerRef.current) {
+				clearTimeout(notificationTimerRef.current);
+			}
+		};
+	}, []);
+
+	const showNotification = (message, type = "success") => {
+		setNotification({
+			id: Date.now(),
+			message: String(message || ""),
+			type,
+		});
+
+		if (notificationTimerRef.current) {
+			clearTimeout(notificationTimerRef.current);
+		}
+
+		notificationTimerRef.current = setTimeout(() => {
+			setNotification(null);
+		}, 2200);
+	};
+
+	const getAuthErrorMessage = (error) => {
+		const status = error?.response?.status;
+		const data = error?.response?.data;
+
+		let rawMessage = "";
+		if (typeof data === "string") {
+			rawMessage = data;
+		} else if (typeof data?.message === "string") {
+			rawMessage = data.message;
+		} else if (typeof data?.error === "string") {
+			rawMessage = data.error;
+		} else if (typeof error?.message === "string") {
+			rawMessage = error.message;
+		}
+
+		const normalizedMessage = String(rawMessage || "").toLowerCase();
+
+		if (normalizedMessage.includes("password")) {
+			return "Login failed. Incorrect password.";
+		}
+
+		if (
+			normalizedMessage.includes("email") ||
+			normalizedMessage.includes("mobile") ||
+			normalizedMessage.includes("user not found")
+		) {
+			return "Login failed. Invalid email or mobile number.";
+		}
+
+		if (status === 401) {
+			return "Login failed. Invalid email or mobile number or password.";
+		}
+
+		return "Authentication failed. Please try again.";
+	};
 
 	const handleAuth = async () => {
 		setAuthMessage("");
@@ -72,18 +194,32 @@ function App() {
 
 			localStorage.setItem("token", jwt);
 			setToken(jwt);
+			await resolveUserIdByEmail(email);
 			setAuthMessage("Logged in successfully.");
+			navigate("/dashboard", { replace: true });
 		} catch (error) {
-			const message = error?.response?.data?.message || error?.response?.data || error.message;
-			setAuthMessage(message || "Authentication failed");
+			setAuthMessage(getAuthErrorMessage(error));
 		}
 	};
 
 	const handleLogout = () => {
 		localStorage.removeItem("token");
+		localStorage.removeItem("userId");
+		hasAttemptedUserIdAutofill.current = false;
 		setToken("");
+		setUserId("");
 		setPassword("");
 		setAuthMessage("Logged out successfully.");
+		navigate("/auth", { replace: true });
+	};
+
+	const handleUserIdChange = (value) => {
+		setUserId(value);
+		if (String(value || "").trim()) {
+			localStorage.setItem("userId", String(value));
+		} else {
+			localStorage.removeItem("userId");
+		}
 	};
 
 	const fetchAverageRatings = (moviesList) => {
@@ -99,6 +235,54 @@ function App() {
 		});
 	};
 
+	const fetchRecommendations = async (currentUserId) => {
+		const normalizedUserId = String(currentUserId || "").trim();
+		const parsedUserId = Number(normalizedUserId);
+
+		if (!Number.isInteger(parsedUserId) || parsedUserId <= 0) {
+			setRecommendedMovies([]);
+			setLoadingML(false);
+			return;
+		}
+
+		const requestId = recommendationRequestIdRef.current + 1;
+		recommendationRequestIdRef.current = requestId;
+
+		try {
+			setLoadingML(true);
+
+			const response = await fetch(`http://localhost:8080/ml/${parsedUserId}`);
+			const data = await response.json();
+
+			if (!response.ok) {
+				throw new Error(data?.detail || "Failed to fetch recommendations");
+			}
+
+			const normalizedRecommendations = Array.isArray(data)
+				? data
+				: Array.isArray(data?.data)
+					? data.data
+					: [];
+
+			if (requestId === recommendationRequestIdRef.current) {
+				setRecommendedMovies(normalizedRecommendations);
+			}
+		} catch (error) {
+			console.error("Error fetching recommendations", error);
+			if (requestId === recommendationRequestIdRef.current) {
+				setRecommendedMovies([]);
+			}
+		} finally {
+			if (requestId === recommendationRequestIdRef.current) {
+				setLoadingML(false);
+			}
+		}
+	};
+
+	useEffect(() => {
+		fetchRecommendations(userId);
+	}, [userId]);
+
 	const handleRatingChange = (movieId, value) => {
 		setRatingInputs((prev) => ({
 			...prev,
@@ -106,18 +290,55 @@ function App() {
 		}));
 	};
 
-	const submitRating = async (movieId) => {
+	const parseReleaseYearFromTitle = (title) => {
+		const match = String(title || "").match(/\((\d{4})\)\s*$/);
+		return match ? Number(match[1]) : 0;
+	};
+
+	const getErrorMessage = (error, fallbackMessage) => {
+		const responseData = error?.response?.data;
+
+		if (typeof responseData === "string" && responseData.trim()) {
+			return responseData;
+		}
+
+		if (responseData && typeof responseData === "object") {
+			const objectMessage =
+				responseData.message ||
+				responseData.error ||
+				responseData.reason ||
+				responseData.detail ||
+				responseData.title;
+
+			if (objectMessage) {
+				return String(objectMessage);
+			}
+
+			if (responseData.status) {
+				return `Request failed with status ${responseData.status}`;
+			}
+		}
+
+		if (error?.message) {
+			return error.message;
+		}
+
+		return fallbackMessage;
+	};
+
+	const submitRating = async (movie) => {
+		const movieId = movie?.movieId;
 		const ratingValue = ratingInputs[movieId];
 		const parsedUserId = Number(userId);
 		const parsedRating = Number(ratingValue);
 
 		if (!Number.isInteger(parsedUserId) || parsedUserId <= 0) {
-			alert("Enter a valid User ID!");
+			showNotification("Enter a valid User ID!", "error");
 			return;
 		}
 
 		if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) {
-			alert("Rating must be between 1 and 5!");
+			showNotification("Rating must be between 1 and 5!", "error");
 			return;
 		}
 
@@ -133,33 +354,65 @@ function App() {
 			await axios.post(`${apiBaseUrl}/ratings`,
 				{
 					score: parsedRating,
-					movie: { movieId: movieId },
+					movie: {
+						movieId: movieId,
+						title: movie?.title || "",
+						genre: Array.isArray(movie?.genres)
+							? movie.genres.join(", ")
+							: movie?.genre || movie?.genres || "Unknown",
+						releaseYear: Number(movie?.releaseYear || parseReleaseYearFromTitle(movie?.title) || 0),
+					},
 					user: { userId: parsedUserId },
 				},
 				{
 				headers,
 				}
 			);
-			alert("Rating submitted!");
+			showNotification("Rating submitted!", "success");
+			setRatingInputs((prev) => ({
+				...prev,
+				[movieId]: "",
+			}));
 			fetchAverageRatings(movies);
 		} catch (err) {
 			console.error("Rating submit failed:", err);
-			const message = err?.response?.data?.message || err?.response?.data || err.message;
-			alert(message || "Error submitting rating");
+			const message = getErrorMessage(err, "Error submitting rating");
+			showNotification(message || "Error submitting rating", "error");
+		}
+	};
+
+	const searchMovies = async (query) => {
+		const normalizedQuery = String(query || "").trim();
+
+		if (!normalizedQuery) {
+			return [];
+		}
+
+		try {
+			const response = await axios.get(`${apiBaseUrl}/ml/search`, {
+				params: { query: normalizedQuery },
+			});
+
+			return Array.isArray(response.data) ? response.data : [];
+		} catch (error) {
+			console.error("Movie search failed:", error);
+			return [];
 		}
 	};
 
 	return (
-		<BrowserRouter>
-			<div className="app-shell">
-				<div className="app-wrapper">
-					<Home />
-					<NavBar />
+		<div className={isAuthPage ? "auth-shell" : isDashboardPage ? "app-shell dashboard-shell" : isMoviesPage ? "app-shell movies-shell" : "app-shell"}>
+			<div className="app-wrapper">
+				{!isAuthPage && <Home token={token} handleLogout={handleLogout} />}
+				{!isAuthPage && <NavBar token={token} />}
 
-					<Routes>
-						<Route
-							path="/auth"
-							element={
+				<Routes>
+					<Route
+						path="/auth"
+						element={
+							token ? (
+								<Navigate to="/dashboard" replace />
+							) : (
 								<AuthView
 									token={token}
 									authMode={authMode}
@@ -172,41 +425,49 @@ function App() {
 									setPassword={setPassword}
 									authMessage={authMessage}
 									handleAuth={handleAuth}
-									handleLogout={handleLogout}
 								/>
-							}
-						/>
-						<Route
-							path="/dashboard"
-							element={
-								<ProtectedRoute token={token}>
-									<DashboardView
-										token={token}
-										userId={userId}
-										setUserId={setUserId}
-										recommendedMovies={recommendedMovies}
-									/>
-								</ProtectedRoute>
-							}
-						/>
-						<Route
-							path="/movies"
-							element={
-								<ProtectedRoute token={token}>
-									<MoviesView
-										movies={movies}
-										averageRatings={averageRatings}
-										ratingInputs={ratingInputs}
-										handleRatingChange={handleRatingChange}
-										submitRating={submitRating}
-									/>
-								</ProtectedRoute>
-							}
-						/>
-						<Route path="*" element={<Navigate to={token ? "/dashboard" : "/auth"} replace />} />
-					</Routes>
-				</div>
+							)
+						}
+					/>
+					<Route
+						path="/dashboard"
+						element={
+							<ProtectedRoute token={token}>
+								<DashboardView
+									userId={userId}
+									setUserId={handleUserIdChange}
+									recommendedMovies={recommendedMovies}
+									loadingML={loadingML}
+								/>
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/movies"
+						element={
+							<ProtectedRoute token={token}>
+								<MoviesView
+									searchMovies={searchMovies}
+									averageRatings={averageRatings}
+									ratingInputs={ratingInputs}
+									handleRatingChange={handleRatingChange}
+									submitRating={submitRating}
+									notification={notification}
+								/>
+							</ProtectedRoute>
+						}
+					/>
+					<Route path="*" element={<Navigate to={token ? "/dashboard" : "/auth"} replace />} />
+				</Routes>
 			</div>
+		</div>
+	);
+}
+
+function App() {
+	return (
+		<BrowserRouter>
+			<AppContent />
 		</BrowserRouter>
 	);
 }

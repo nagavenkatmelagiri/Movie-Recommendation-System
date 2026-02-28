@@ -12,57 +12,59 @@ function AuthView({
   setPassword,
   authMessage,
   handleAuth,
-  handleLogout,
 }) {
+  const isLogin = authMode === "login";
+
   return (
-    <section className="page-panel auth-panel">
-      <h2>{token ? "✅ Logged In" : authMode === "login" ? "🔐 Login" : "📝 Register"}</h2>
+    <section className="auth-screen">
+      <header className="auth-screen-header">
+        <h1 className="auth-brand">Movie Zone</h1>
+      </header>
 
-      {!token && authMode === "register" && (
-        <input
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          className="text-input"
-        />
-      )}
+      <div className="auth-content">
+        <h2 className="auth-title">Enter your info to sign in</h2>
+        <p className="auth-subtitle">Or get started with a new account.</p>
 
-      {!token && (
-        <>
+        {!token && !isLogin && (
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="text-input"
+            type="text"
+            placeholder="Full name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            className="auth-input"
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="text-input"
-          />
-          <button onClick={handleAuth} className="primary-btn">
-            {authMode === "login" ? "Login" : "Register"}
-          </button>
-          <button
-            onClick={() => setAuthMode(authMode === "login" ? "register" : "login")}
-            className="link-btn"
-          >
-            {authMode === "login" ? "Need an account? Register" : "Already have an account? Login"}
-          </button>
-        </>
-      )}
+        )}
 
-      {token && (
-        <button onClick={handleLogout} className="primary-btn danger-btn">
-          Logout
-        </button>
-      )}
+        {!token && (
+          <>
+            <input
+              type="email"
+              placeholder="Email or mobile number"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="auth-input"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="auth-input"
+            />
+            <button onClick={handleAuth} className="auth-cta-btn">
+              Continue
+            </button>
+            <button
+              onClick={() => setAuthMode(isLogin ? "register" : "login")}
+              className="auth-switch-link"
+            >
+              {isLogin ? "Need an account? Register" : "Already have an account? Login"}
+            </button>
+          </>
+        )}
 
-      {authMessage && <p className="auth-message">{authMessage}</p>}
+        {authMessage && <p className="auth-message auth-login-message">{authMessage}</p>}
+      </div>
     </section>
   );
 }

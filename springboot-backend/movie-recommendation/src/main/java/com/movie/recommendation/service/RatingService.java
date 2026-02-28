@@ -42,15 +42,35 @@ public class RatingService {
         Long userId = rating.getUser().getUserId();
         Long movieId = rating.getMovie().getMovieId();
 
-        if (userId == null || movieId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Movie ID and user ID are required");
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID is required");
         }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found"));
+        Movie incomingMovie = rating.getMovie();
+        Movie movie = null;
+
+        if (movieId != null) {
+            movie = movieRepository.findById(movieId).orElse(null);
+        }
+
+        if (movie == null) {
+            String title = incomingMovie.getTitle() == null ? "" : incomingMovie.getTitle().trim();
+            if (title.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Movie title is required");
+            }
+
+            movie = movieRepository.findFirstByTitle(title)
+                    .orElseGet(() -> {
+                        Movie newMovie = new Movie();
+                        newMovie.setTitle(title);
+                        newMovie.setGenre(incomingMovie.getGenre() == null ? "Unknown" : incomingMovie.getGenre());
+                        newMovie.setReleaseYear(incomingMovie.getReleaseYear());
+                        return movieRepository.save(newMovie);
+                    });
+        }
 
         rating.setUser(user);
         rating.setMovie(movie);

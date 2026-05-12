@@ -28,3 +28,25 @@ venv/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Authorization and security files
+*.key
+*.pem
+*.pub
+credentials.json
+auth-config.json
+secrets.json
+oauth-tokens.json
+jwt-secrets.txt
+auth.properties
+security/
+keys/
+
+# Spring Boot - Database and API connections
+springboot-backend/**/application.properties
+springboot-backend/**/application-*.properties
+springboot-backend/**/application-prod.yml
+springboot-backend/**/application-dev.yml
+springboot-backend/**/*.yml
+springboot-backend/movie-recommendation/src/main/resources/*.properties
+!springboot-backend/**/application.properties.example

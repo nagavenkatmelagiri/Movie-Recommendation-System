@@ -6,9 +6,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.movie.recommendation.entity.Follow;
 import com.movie.recommendation.entity.Movie;
 import com.movie.recommendation.entity.Rating;
 import com.movie.recommendation.entity.User;
+import com.movie.recommendation.repository.FollowRepository;
 import com.movie.recommendation.repository.MovieRepository;
 import com.movie.recommendation.repository.RatingRepository;
 import com.movie.recommendation.repository.UserRepository;
@@ -19,13 +21,16 @@ public class RatingService {
     private final RatingRepository ratingRepository;
     private final UserRepository userRepository;
     private final MovieRepository movieRepository;
+    private final FollowRepository followRepository;
 
     public RatingService(RatingRepository ratingRepository,
                          UserRepository userRepository,
-                         MovieRepository movieRepository) {
+                         MovieRepository movieRepository,
+                         FollowRepository followRepository) {
         this.ratingRepository = ratingRepository;
         this.userRepository = userRepository;
         this.movieRepository = movieRepository;
+        this.followRepository = followRepository;
     }
 
     // 🔥 Save rating properly (fixes React error)
@@ -82,17 +87,32 @@ public class RatingService {
     public List<Rating> getAllRatings() {
         return ratingRepository.findAll();
     }
+    public List<Rating> getFriendsRatings(Long userId) {
 
+    List<Follow> follows = followRepository.findByFollowerId(userId);
+
+    List<Long> friendIds = follows.stream()
+            .map(Follow::getFollowingId)
+            .toList();
+
+    return ratingRepository.findByUser_UserIdIn(friendIds);
+}
     // Get ratings by movie
     public List<Rating> getRatingsByMovie(Movie movie) {
         return ratingRepository.findByMovie(movie);
     }
-
+    
     // Get ratings by user
     public List<Rating> getRatingsByUser(User user) {
         return ratingRepository.findByUser(user);
     }
+    public List<Movie> getWatchHistory(Long userId) {
+        List<Rating> ratings = ratingRepository.findByUser_UserId(userId);
 
+        return ratings.stream()
+                .map(Rating::getMovie)
+                .toList();
+    }
     // ⭐ Calculate average rating for a movie
     public double getAverageRatingForMovie(Long movieId) {
 
@@ -110,5 +130,6 @@ public class RatingService {
                 .average()
                 .orElse(0.0);
     }
+    
 
 }

@@ -29,7 +29,10 @@ public class MovieController {
     public List<Movie> getAllMovies() {
         return movieService.getAllMovies();
     }
-
+    @GetMapping("/trending")
+    public List<Movie> getTrendingMovies() {
+        return movieService.getTrendingMovies();
+    }
     // ⭐ Average rating endpoint
     @GetMapping("/{id}/average-rating")
     public double getAverageRating(@PathVariable Long id) {

@@ -1,0 +1,30 @@
+# Frontend dependencies and build output
+node_modules/
+build/
+coverage/
+
+# Backend build output
+target/
+*.class
+
+# Backend data and ML module
+springboot-backend/database/
+ml-recommendation/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Environment files and logs
+.env
+.env.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import AuthView from "./AuthView.jsx";
-import DashboardView from "./DashboardView.jsx";
-import Home from "./Home.jsx";
-import MoviesView from "./MoviesView.jsx";
-import NavBar from "./NavBar.jsx";
+import AuthView from "./pages/AuthView.jsx";
+import DashboardView from "./pages/DashboardView.jsx";
+import FriendsActivity from "./components/FriendsActivity.jsx";
+import Home from "./pages/Home.jsx";
+import MoviesView from "./pages/MoviesView.jsx";
+import NavBar from "./components/NavBar.jsx";
+import WatchlistView from "./pages/WatchlistView.jsx";
 import "./index.css";
 
 function ProtectedRoute({ token, children }) {
@@ -29,6 +31,7 @@ function AppContent() {
 	const [token, setToken] = useState(localStorage.getItem("token") || "");
 	const [authMessage, setAuthMessage] = useState("");
 	const [notification, setNotification] = useState(null);
+	const [watchlistVersion, setWatchlistVersion] = useState(0);
 	const hasAttemptedUserIdAutofill = useRef(false);
 	const notificationTimerRef = useRef(null);
 	const recommendationRequestIdRef = useRef(0);
@@ -38,6 +41,8 @@ function AppContent() {
 	const isAuthPage = location.pathname === "/auth";
 	const isDashboardPage = location.pathname === "/dashboard";
 	const isMoviesPage = location.pathname === "/movies";
+	const isWatchlistPage = location.pathname === "/watchlist";
+	const isFriendsPage = location.pathname === "/friends";
 
 	useEffect(() => {
 		axios
@@ -45,6 +50,10 @@ function AppContent() {
 			.then((data) => {
 				setMovies(data.data);
 				fetchAverageRatings(data.data);
+			})
+			.catch(() => {
+				setMovies([]);
+				showNotification("Backend server is unavailable. Start backend on port 8080.", "error");
 			});
 	}, []);
 
@@ -205,9 +214,14 @@ function AppContent() {
 	const handleLogout = () => {
 		localStorage.removeItem("token");
 		localStorage.removeItem("userId");
+		const existingUserId = String(userId || "").trim();
+		if (existingUserId) {
+			localStorage.removeItem(`watchlist-cache-${existingUserId}`);
+		}
 		hasAttemptedUserIdAutofill.current = false;
 		setToken("");
 		setUserId("");
+		setWatchlistVersion(0);
 		setPassword("");
 		setAuthMessage("Logged out successfully.");
 		navigate("/auth", { replace: true });
@@ -230,6 +244,12 @@ function AppContent() {
 					setAverageRatings((prev) => ({
 						...prev,
 						[movie.movieId]: avg.data.toFixed(1),
+					}));
+				})
+				.catch(() => {
+					setAverageRatings((prev) => ({
+						...prev,
+						[movie.movieId]: "0.0",
 					}));
 				});
 		});
@@ -400,8 +420,93 @@ function AppContent() {
 		}
 	};
 
+	const handleWatchlistAdded = (movie) => {
+		const normalizedUserId = String(userId || "").trim();
+		if (!normalizedUserId) {
+			showNotification("Please log in again to use watchlist.", "error");
+			return;
+		}
+
+		if (!movie || typeof movie !== "object") {
+			showNotification("Failed to add to watchlist.", "error");
+			return;
+		}
+
+		const normalizedMovie = {
+			movieId: Number(movie?.movieId) || 0,
+			title: String(movie?.title || "Untitled movie"),
+			genre: Array.isArray(movie?.genres)
+				? movie.genres.join(", ")
+				: String(movie?.genre || movie?.genres || "Unknown genre"),
+			releaseYear: Number(movie?.releaseYear || parseReleaseYearFromTitle(movie?.title) || 0),
+		};
+
+		try {
+			const cacheKey = `watchlist-cache-${normalizedUserId}`;
+			const cachedRaw = localStorage.getItem(cacheKey);
+			const parsedCache = JSON.parse(cachedRaw || "[]");
+			const cachedMovies = Array.isArray(parsedCache) ? parsedCache : [];
+
+			const alreadyExists = cachedMovies.some((cachedMovie) => {
+				const cachedMovieId = Number(cachedMovie?.movieId);
+				if (cachedMovieId > 0 && normalizedMovie.movieId > 0) {
+					return cachedMovieId === normalizedMovie.movieId;
+				}
+
+				return String(cachedMovie?.title || "").trim().toLowerCase() === normalizedMovie.title.trim().toLowerCase();
+			});
+
+			if (!alreadyExists) {
+				localStorage.setItem(cacheKey, JSON.stringify([...cachedMovies, normalizedMovie]));
+			}
+
+			setWatchlistVersion((prev) => prev + 1);
+			showNotification("Added to Watchlist", "success");
+		} catch {
+			showNotification("Added to Watchlist", "success");
+		}
+	};
+
+	const handleWatchlistRemoved = (movie) => {
+		const normalizedUserId = String(userId || "").trim();
+		if (!normalizedUserId) {
+			showNotification("Please log in again to manage watchlist.", "error");
+			return;
+		}
+
+		if (!movie || typeof movie !== "object") {
+			showNotification("Failed to remove from watchlist.", "error");
+			return;
+		}
+
+		const movieIdToRemove = Number(movie?.movieId);
+		const movieTitleToRemove = String(movie?.title || "").trim().toLowerCase();
+
+		try {
+			const cacheKey = `watchlist-cache-${normalizedUserId}`;
+			const cachedRaw = localStorage.getItem(cacheKey);
+			const parsedCache = JSON.parse(cachedRaw || "[]");
+			const cachedMovies = Array.isArray(parsedCache) ? parsedCache : [];
+
+			const filteredMovies = cachedMovies.filter((cachedMovie) => {
+				const cachedMovieId = Number(cachedMovie?.movieId);
+				if (movieIdToRemove > 0 && cachedMovieId > 0) {
+					return cachedMovieId !== movieIdToRemove;
+				}
+
+				return String(cachedMovie?.title || "").trim().toLowerCase() !== movieTitleToRemove;
+			});
+
+			localStorage.setItem(cacheKey, JSON.stringify(filteredMovies));
+			setWatchlistVersion((prev) => prev + 1);
+			showNotification("Removed from Watchlist", "success");
+		} catch {
+			showNotification("Removed from Watchlist", "success");
+		}
+	};
+
 	return (
-		<div className={isAuthPage ? "auth-shell" : isDashboardPage ? "app-shell dashboard-shell" : isMoviesPage ? "app-shell movies-shell" : "app-shell"}>
+		<div className={isAuthPage ? "auth-shell" : isDashboardPage ? "app-shell dashboard-shell" : isMoviesPage || isWatchlistPage || isFriendsPage ? "app-shell movies-shell" : "app-shell"}>
 			<div className="app-wrapper">
 				{!isAuthPage && <Home token={token} handleLogout={handleLogout} />}
 				{!isAuthPage && <NavBar token={token} />}
@@ -447,6 +552,8 @@ function AppContent() {
 						element={
 							<ProtectedRoute token={token}>
 								<MoviesView
+									userId={userId}
+									onWatchlistAdded={handleWatchlistAdded}
 									searchMovies={searchMovies}
 									averageRatings={averageRatings}
 									ratingInputs={ratingInputs}
@@ -454,6 +561,27 @@ function AppContent() {
 									submitRating={submitRating}
 									notification={notification}
 								/>
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/watchlist"
+						element={
+							<ProtectedRoute token={token}>
+								<WatchlistView
+									userId={userId}
+									watchlistVersion={watchlistVersion}
+									notification={notification}
+									onWatchlistRemoved={handleWatchlistRemoved}
+								/>
+							</ProtectedRoute>
+						}
+					/>
+					<Route
+						path="/friends"
+						element={
+							<ProtectedRoute token={token}>
+								<FriendsActivity userId={userId} />
 							</ProtectedRoute>
 						}
 					/>

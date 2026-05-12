@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import java.net.URI;
 
 @Service
 public class MlService {
@@ -35,17 +36,19 @@ public class MlService {
     }
 
     public List<Map<String, Object>> searchMovies(String query) {
-        String url = UriComponentsBuilder
+        URI uri = UriComponentsBuilder
                 .newInstance()
                 .scheme("http")
                 .host("localhost")
                 .port(8000)
                 .path("/search")
                 .queryParam("q", query)
-                .toUriString();
+            .build()
+            .encode()
+            .toUri();
 
         ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
-                url,
+            uri,
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<List<Map<String, Object>>>() {

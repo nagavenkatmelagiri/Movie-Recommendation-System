@@ -1,16 +1,20 @@
 package com.movie.recommendation.security;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
-
 import java.security.Key;
 import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "your_secret_key_very_long_for_security_123456";
+    @Value("${jwt.secret:${JWT_SECRET:your_secret_key_very_long_for_security_123456}}")
+    private String SECRET;
 
     private Key getSignKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());

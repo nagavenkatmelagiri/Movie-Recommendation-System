@@ -11,3 +11,10 @@ spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
 
 # Server
 server.port=8080
+
+# JWT Configuration - Generate a strong secret key
+# Use: $(openssl rand -base64 32) to generate a random key
+jwt.secret=YOUR_JWT_SECRET_KEY_HERE
+
+# CORS Configuration - Set allowed frontend origins (comma-separated for multiple)
+cors.allowed-origins=http://localhost:3000

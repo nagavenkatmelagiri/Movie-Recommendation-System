@@ -50,3 +50,9 @@ springboot-backend/**/application-dev.yml
 springboot-backend/**/*.yml
 springboot-backend/movie-recommendation/src/main/resources/*.properties
 !springboot-backend/**/application.properties.example
+
+# Java security and configuration
+springboot-backend/**/*.key
+springboot-backend/**/*.jks
+springboot-backend/**/*.p12
+springboot-backend/**/config/secrets.properties

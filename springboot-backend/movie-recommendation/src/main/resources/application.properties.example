@@ -2,7 +2,7 @@
 # Replace these with your actual values or set environment variables
 spring.datasource.url=jdbc:mysql://localhost:3306/movie_recommendation
 spring.datasource.username=root
-spring.datasource.password=YOUR_PASSWORD_HERE
+spring.datasource.password=Venky2005
 
 # JPA Configuration
 spring.jpa.hibernate.ddl-auto=update

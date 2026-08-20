@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import AuthView from "./pages/AuthView.jsx";
-import DashboardView from "./pages/DashboardView.jsx";
-import FriendsActivity from "./components/FriendsActivity.jsx";
-import Home from "./pages/Home.jsx";
-import MoviesView from "./pages/MoviesView.jsx";
-import NavBar from "./components/NavBar.jsx";
-import WatchlistView from "./pages/WatchlistView.jsx";
+import AuthView from "./pages/AuthView/AuthView.jsx";
+import DashboardView from "./pages/DashboardView/DashboardView.jsx";
+import FriendsActivity from "./components/FriendsActivity/FriendsActivity.jsx";
+import Home from "./pages/Home/Home.jsx";
+import MoviesView from "./pages/MoviesView/MoviesView.jsx";
+import NavBar from "./components/NavBar/NavBar.jsx";
+import WatchlistView from "./pages/WatchlistView/WatchlistView.jsx";
 import "./index.css";
 
 function ProtectedRoute({ token, children }) {
